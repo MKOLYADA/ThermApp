@@ -1,74 +1,165 @@
 #include <mkapplication.h>
 #include <vector>
 
+MK::MKApplication* mk;
+
+uint16_t GREY = 0x98959b;
+float TBoilerOUT;
+float TBoilerIN;
+float TFloorOUT;
+float TFloorIN;
+float TBoilerOT;
+float TGarageOUT;
+
+void DrawMSTemp(String param,int line, int column, float temp, uint16_t color)
+{
+  
+  M5.Lcd.drawRect((column-1)*160,(line-1)*75,160,75, GREY);
+
+  M5.Lcd.setCursor(25+(column-1)*160,2+(line-1)*75);
+  M5.Lcd.setTextColor(WHITE);
+  M5.Lcd.setTextSize(2);
+  M5.Lcd.print(param);
+  M5.Lcd.setCursor(10+(column-1)*160,20+(line-1)*75);
+  M5.Lcd.setTextColor(color);
+  M5.Lcd.setTextSize(6);
+  M5.Lcd.printf("%g",temp);
+  
+}
+
+void DrawMainScreen(void)
+{
+  DrawMSTemp("Boiler OUT",1,1,TBoilerOUT,GREEN);
+  DrawMSTemp("Floor IN",1,2,TFloorIN,RED);
+  DrawMSTemp("Boiler IN",2,1,TBoilerIN,GREEN);
+  DrawMSTemp("Floor OUT",2,2,TFloorOUT,BLUE);
+  DrawMSTemp("Boiler Temp",3,1,TBoilerOT,BLUE);
+  DrawMSTemp("Garage OUT",3,2,TGarageOUT,RED);
+}
+
+void GetTemp(void)
+{
+  TBoilerOUT = 20 + random(10);
+  TBoilerIN = 20 + random(10) ;
+  TFloorOUT =  20 + random(10);
+  TFloorIN =  20 + random(10);
+  TBoilerOT=  20 + random(10);
+  TGarageOUT=  20 + random(10);
+  
+}
+
+
+int CC = 35;
+int DD = 2;
+class ScreenSetFloorTemp: MK::MKScreen
+{
+  public:
+  ScreenSetFloorTemp()
+  {
+    ABtnAction = ACTION_NEXT_SCREEN;
+    BBtnAction = ACTION_DOWN;
+    CBtnAction = ACTION_UP;
+    mk->AddScreen((MK::MKScreen*)this);
+  
+  }
+
+  void Draw() override
+  {
+    M5.Lcd.clearDisplay();
+    M5.Lcd.setCursor(20,20);
+    M5.Lcd.setTextSize(3);
+    M5.Lcd.setTextColor(WHITE);
+    M5.Lcd.print("Set floor temp C");
+    M5.Lcd.setCursor(70,100);
+    M5.Lcd.setTextSize(8);
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.print(String(CC));
+    
+
+    DrawButtons();
+  }
+  void OnButtonAPressed()  override
+  {
+    app->NextScreen();
+    app->ActiveScreen->Draw();
+  }
+
+  void OnButtonBPressed()  override
+  {
+    CC--;
+    Draw();
+  }
+  void OnButtonCPressed()  override
+  {
+    CC++;
+    Draw();
+  }
+
+};
+
+class ScreenSetFloorDelta: MK::MKScreen
+{
+  public:
+  ScreenSetFloorDelta()
+  {
+    ABtnAction = ACTION_NEXT_SCREEN;
+    BBtnAction = ACTION_DOWN;
+    CBtnAction = ACTION_UP;
+    mk->AddScreen((MK::MKScreen*)this);
+  }
+
+  void Draw() override
+  {
+    M5.Lcd.clearDisplay();
+    M5.Lcd.setCursor(20,20);
+    M5.Lcd.setTextSize(3);
+    M5.Lcd.setTextColor(WHITE);
+    M5.Lcd.print("Set floor delta");
+    M5.Lcd.setCursor(70,100);
+    M5.Lcd.setTextSize(8);
+    M5.Lcd.setTextColor(GREEN);
+    M5.Lcd.print(String(DD));
+    
+
+    DrawButtons();
+  }
+  void OnButtonAPressed()  override
+  {
+    app->NextScreen();
+    app->ActiveScreen->Draw();
+  }
+
+  void OnButtonBPressed()  override
+  {
+    DD--;
+    Draw();
+  }
+
+
+void OnButtonCPressed()  override
+  {
+    DD++;
+    Draw();
+  }
+
+};
+
 class Screen1: MK::MKScreen
 {
   public:
+  Screen1()
+  {
+    ABtnAction = ACTION_NEXT_SCREEN;
+    mk->AddScreen((MK::MKScreen*)this);
+
+  }
+
   void Draw() override
   {
     M5.Lcd.clearDisplay();
-    M5.Lcd.setCursor(50,50);
-    M5.Lcd.setTextSize(4);
-    M5.Lcd.setTextColor(BLUE);
-    M5.Lcd.print("SCREEN 1");
-  }
-  void OnButtonAPressed()  override
-  {
-    app->NextScreen();
-    app->ActiveScreen->Draw();
-  }
-};
-
-class Screen2: MK::MKScreen
-{
-  public:
-  void Draw() override
-  {
-    M5.Lcd.clearDisplay();
-    M5.Lcd.setCursor(50,50);
-    M5.Lcd.setTextSize(4);
-    M5.Lcd.setTextColor(YELLOW);
-    M5.Lcd.print("SCREEN 2");
-  }
-
-  void OnButtonCPressed()  override
-  {
-    app->NextScreen();
-    app->ActiveScreen->Draw();
-  }
-
-};
-
-class Screen3: MK::MKScreen
-{
-  public:
-  void Draw() override
-  {
-    M5.Lcd.clearDisplay();
-    M5.Lcd.setCursor(50,50);
-    M5.Lcd.setTextSize(4);
-    M5.Lcd.setTextColor(GREEN);
-    M5.Lcd.print("SCREEN 3");
-  }
-
-  void OnButtonBPressed()  override
-  {
-    app->NextScreen();
-    app->ActiveScreen->Draw();
-  }
-};
-
-
-class Screen99: MK::MKScreen
-{
-  public:
-  void Draw() override
-  {
-    M5.Lcd.clearDisplay();
-    M5.Lcd.setCursor(50,50);
-    M5.Lcd.setTextSize(4);
-    M5.Lcd.setTextColor(WHITE);
-    M5.Lcd.print("SCREEN 99");
+    GetTemp();
+    DrawMainScreen();
+    DrawButtons();
   }
 
   void OnButtonAPressed()  override
@@ -76,37 +167,30 @@ class Screen99: MK::MKScreen
     app->NextScreen();
     app->ActiveScreen->Draw();
   }
-  void OnButtonBPressed()  override
-  {
-    M5.Lcd.drawRect(20,20,100,100,RED);
-  }
-  void OnButtonCPressed()  override
-  {
-    app->NextScreen();
-    app->ActiveScreen->Draw();
-  }
+
 };
+
 
 
 Screen1* scr1;
-Screen2* scr2;
-Screen3* scr3;
-Screen99* scr99;
-MK::MKApplication* mk;
+ScreenSetFloorTemp* screenSetFloorTemp;
+ScreenSetFloorDelta* screenSetFloorDelta; 
 
-void setup(void) {
+
+
+
+
+void setup(void) 
+{
   M5.begin();
   mk = new MK::MKApplication();
   scr1 = new Screen1();
-  scr2 = new Screen2();
-  scr3 = new Screen3();
-  scr99 = new Screen99();
+  screenSetFloorTemp = new ScreenSetFloorTemp();
+  screenSetFloorDelta = new ScreenSetFloorDelta();
   
-  mk->AddScreen((MK::MKScreen*)scr99);
-  mk->AddScreen((MK::MKScreen*)scr1);
-  mk->AddScreen((MK::MKScreen*)scr2);
-  mk->AddScreen((MK::MKScreen*)scr3);
-  mk->ActiveScreen = (MK::MKScreen*)scr99;
+  //mk->AddScreen((MK::MKScreen*)screenSetFloorTemp);
+  //mk->AddScreen((MK::MKScreen*)screenSetFloorDelta);
+  mk->ActiveScreen = (MK::MKScreen*)scr1;
   mk->ActiveScreen->Draw();
   
 
@@ -136,7 +220,7 @@ void loop()
   }
 
 
-  delay(500);
+  delay(100);
 
 }
 
